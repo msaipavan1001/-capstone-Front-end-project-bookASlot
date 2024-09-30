@@ -1,0 +1,13 @@
+.logo {
+    width: 100px;
+    height: 100px;
+    margin: auto auto;
+    background-image: url('/src/assets/logo.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.booking {
+    font-family: Arial, sans-serif;
+    color: #003366;
+}
