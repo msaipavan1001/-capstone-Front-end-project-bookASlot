@@ -8,11 +8,18 @@ import ErrorPage from './Components/ErrorPage';
 import Dashboard from './Components/Dashboard';
 import AdminDashboard from './Components/AdminDashboard';
 import SignUp from './Components/SignUp';
+import Login from './Components/Login';
+import { AppProvider } from './context/AppContext';
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
     errorElement: <ErrorPage />,
   },
   {
@@ -39,6 +46,9 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AppProvider>
+      <App />
+    </AppProvider>
+   
   </StrictMode>,
 )

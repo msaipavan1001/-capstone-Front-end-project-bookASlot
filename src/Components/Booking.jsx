@@ -8,6 +8,8 @@ import { Navigate } from "react-router-dom";
 import TextField from '@mui/material/TextField';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useAppContext } from '../context/AppContext';
+import {Typography} from '@material-ui/core';
 // //import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 // import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 // import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -40,7 +42,7 @@ const data={
         Names:[
         {id:1, name:"Mehfil",slots:["10:00 AM - 10:30 AM","10:30 AM - 11:00 AM","11:00 AM - 11:30 AM","11:30 AM - 12:00 PM"]},
         {id:2, name:"Shahghouse",slots:["10:00 AM - 10:30 AM","10:30 AM - 11:00 AM","11:00 AM - 11:30 AM","12:00 pM - 1:00 PM"]},
-        {id:3, name:"Paradise",slots:["10:00 AM - 10:30 AM","10:30 AM - 11:00 AM","11:00 AM - 11:30 AM","11:30 AM - 12:00 PM"]}]
+        {id:3, name:"Paradise",slots:["10:00 AM - 10:30 AM","10:30 AM - 11:00 AM","11:00 AM - 11:30 AM","11:30 AM - 12:00 PM","01:00 PM - 02:00 PM"]}]
     },
     Salon:{
         id:1,
@@ -70,8 +72,10 @@ const Booking = () => {
     const [selectedSlot,setSelectedSlot] = useState('');
     const [redirect,setRedirect] =useState(false);
     const paperStyle={
-    padding:20,height:'85vh',margin:"auto auto",textAlign:"left"
+    padding:20,height:"auto",margin:"auto auto",textAlign:"left",background:'#eef7ff'
 };
+const { initateCustomerdata, initateBusinessdata,businessData,customerData } = useAppContext();
+console.log("customerData:",customerData)
 useEffect(() =>{
     if (submitVal) {
         const timeoutId = setTimeout(() => {
@@ -131,6 +135,9 @@ const submitData = () =>{
   return (
     <div>
         <Grid className='booking'>
+        <Typography variant="caption" gutterBottom style={{float:"right",margin:"1rem"}}>
+              Username:Saipavan
+            </Typography>
         <Paper elevation={10} style={paperStyle}>
             <Container maxWidth="md">
             <div class="logo"></div>
