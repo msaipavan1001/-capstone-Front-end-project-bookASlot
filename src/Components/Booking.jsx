@@ -209,9 +209,9 @@ function extractNamesByType(type) {
            const filteredTimeSlots = hospitalData.filter(session => session.business.business_name === name)
            .map(session => {
             const data = {
-                session_uid,
-                session_date,
-                timeslot,
+                session_uid:session.session_uid,
+                session_date:session.session_date,
+                timeslot:session.timeslot,
                 timeSlotDisplay: `${session.session_date} - ${session.timeslot}`
             }
             return data
@@ -222,9 +222,9 @@ function extractNamesByType(type) {
            const filteredTimeSlots = saloonData.filter(session => session.business.business_name === name)
                             .map(session => {
                                 const data = {
-                                    session_uid,
-                                    session_date,
-                                    timeslot,
+                                    session_uid:session.session_uid,
+                                    session_date:session.session_date,
+                                    timeslot:session.timeslot,
                                     timeSlotDisplay: `${session.session_date} - ${session.timeslot}`
                                 }
                                 return data
