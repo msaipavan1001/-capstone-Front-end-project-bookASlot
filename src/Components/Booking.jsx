@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Grid,Paper,Container,Box,FormControl,InputLabel,Select,MenuItem} from '@material-ui/core';
+import { Grid,Paper,Container,FormControl,InputLabel,Select,MenuItem} from '@material-ui/core';
 import Avatar from '@mui/material/Avatar';
 import './App.css';
 import {Button} from '@material-ui/core';
@@ -9,9 +9,10 @@ import TextField from '@mui/material/TextField';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useAppContext } from '../context/AppContext';
-import {Typography} from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Typography,  } from '@mui/material';
 // //import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 // import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 // import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -60,6 +61,23 @@ const SimpleAlert = () =>{
       <Alert severity="success">
         The selected slot has been successfully booked
       </Alert>
+    );
+  }
+  const NoSlotsAvailable = () => {
+    return (
+      <Box 
+        display="flex" 
+        justifyContent="center" 
+        alignItems="center" 
+        height="100vh"
+      >
+        <Typography 
+          variant="h6" 
+          color="error"
+        >
+          No slots available
+        </Typography>
+      </Box>
     );
   }
 
@@ -264,6 +282,7 @@ const submitData = async() =>{
         }
     
 }
+console.log("timeslotArr:",timeslotArr,"name:",name)
   return (
     <div>
         <Grid className='booking'>
@@ -296,7 +315,7 @@ const submitData = async() =>{
                 </Select>
             </FormControl>
             <MarginSpacerL />
-            {nameArr?.length > 0 && 
+            {nameArr?.length > 0 ?  
             <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">Select the name of booking</InputLabel>
                 <Select
@@ -312,7 +331,7 @@ const submitData = async() =>{
                         )
                     })}
                 </Select>
-            </FormControl>}
+            </FormControl> : type && nameArr?.length ===  0 ? <NoSlotsAvailable /> : <></>}
             {/* <MarginSpacerL />
             {name && slotArr?.length >0 && 
             <DatePicker
@@ -326,7 +345,7 @@ const submitData = async() =>{
             />} */}
             <MarginSpacerL />
             {
-                name && timeslotArr?.length >0 && 
+                name && timeslotArr?.length >0 && nameArr?.length > 0 &&
                 <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">Select the date & time slot</InputLabel>
                 <Select
@@ -342,7 +361,7 @@ const submitData = async() =>{
                         )
                     })}
                 </Select>
-            </FormControl>
+            </FormControl> 
             }
             <MarginSpacerL />
             <Button variant="contained" type='submit' color='primary' onClick={() => submitData()}>Submit</Button>

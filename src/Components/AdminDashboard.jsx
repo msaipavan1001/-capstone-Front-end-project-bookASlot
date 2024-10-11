@@ -79,6 +79,12 @@ const AdminDashboard = () => {
   const [upcomingSessions,setUpcomingSessions] = useState([])
   const { initateCustomerdata, initateBusinessdata,businessData,customerData } = useAppContext(); // Use the context
 console.log("businessData:",businessData)
+const resetTimeSlots = () =>{
+  setSelectedDate(minDate)
+  setFormatedDate('')
+  setFinalEndTime('')
+  setFinalStartTime('')
+}
 useEffect(()=>{
   if(completeAlert){
     setTimeout(()=>{
@@ -195,6 +201,7 @@ useEffect(()=>{
     setTimeout(()=>{
       setSuccessWait(false);
       setShowAdminSlotCreation(false);
+      setSucess(false);
     },2000)
   }
 },[sucessWait])
@@ -248,6 +255,7 @@ console.log("timeslot:",timeslot)
     if(response.data?.business?.business_id){
       setSucess(true);
       setSuccessWait(true)
+      resetTimeSlots();
     }
     console.log('API response:', response.data);
     // Handle successful response (e.g., show success message, reset form, etc.)
@@ -258,6 +266,10 @@ console.log("timeslot:",timeslot)
   }
 };
 
+const handleCancelSlotCraetion = () =>{
+  setShowAdminSlotCreation(false);
+  resetTimeSlots();
+}
 console.log("start time:",startTime,"endTime:",endTime)
     return (
 
@@ -419,7 +431,7 @@ console.log("start time:",startTime,"endTime:",endTime)
     </LocalizationProvider>
     <MarginSpacer  />
     <Button variant="outlined" type='submit' color='primary' onClick={() =>handleSubmitSlotCreation()}>Submit</Button>
-    <Button variant="outlined" type='submit' color='secondary' onClick={() =>setShowAdminSlotCreation(false)}>Cancel</Button>
+    <Button variant="outlined" type='submit' color='secondary' onClick={() =>handleCancelSlotCraetion() }>Cancel</Button>
     <MarginSpacer />
     {sucess &&<SucessAlert />}
     {errorTime &&<ErrorTimeAlert />}
