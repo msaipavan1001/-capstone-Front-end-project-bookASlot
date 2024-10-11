@@ -10,6 +10,8 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useAppContext } from '../context/AppContext';
 import {Typography} from '@material-ui/core';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 // //import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 // import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 // import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -62,20 +64,71 @@ const SimpleAlert = () =>{
   }
 
 const Booking = () => {
+    const navigate = useNavigate();
     const [submitVal,setSubmitVal] =useState(false);
     const [type,setType] =useState('');
     const [name,setName] =useState('');
+    const [sessions, setSessions] = useState([]);
     const [selectedDate, setSelectedDate] = useState(null);
-    const types=["Hospital","Restaurant","Salon"];
+    const types=["Hospital","Restaurant","Saloon"];
     const [nameArr,setNameArr] =useState([]);
-    const [slotArr,setSlotArr] = useState([]);
+    const [timeslotArr,setTimeSlotArr] = useState([]);
     const [selectedSlot,setSelectedSlot] = useState('');
     const [redirect,setRedirect] =useState(false);
+    const [error,setError]=useState('');
+    const [resturantData,setResturantData] =useState([]);
+    const [hospitalData,setHospitalData] =useState([]);
+    const [saloonData,setSaloonData] =useState([]);
+    const [finalTime,setFinalTime]=useState([]);
     const paperStyle={
     padding:20,height:"auto",margin:"auto auto",textAlign:"left",background:'#eef7ff'
 };
 const { initateCustomerdata, initateBusinessdata,businessData,customerData } = useAppContext();
 console.log("customerData:",customerData)
+console.log("sessions:",sessions)
+
+useEffect(() => {
+    // Fetch data from the server when component mounts
+    const fetchSessions = async () => {
+        try {
+          const response = await axios.get('http://127.0.0.1:8000/sessions/');
+          setSessions(response.data);
+          const tempData=response.data  // Set the fetched data to state   
+          if(tempData){
+            const restaurants =tempData.filter(session => session.business.business_type === 'Restaurant' && session?.session_status === 'isAvailable');
+            setResturantData(restaurants)
+            const hospitals = tempData.filter(session => session.business.business_type === 'Hospital' && session?.session_status === 'isAvailable');
+            setHospitalData(hospitals)
+            const saloons = tempData.filter(session => session.business.business_type === 'Saloon' && session?.session_status === 'isAvailable');
+            setSaloonData(saloons)
+          }
+        } catch (err) {
+          setError(err);               // Handle any errors
+        }
+      };
+  
+      fetchSessions();  // Call the asynchronous function
+  }, []);  
+  useEffect(() =>{
+    if(type === 'Restaurant'){
+        const names = resturantData?.map((x) => x.business.business_name)
+        console.log("names:",names)
+        const uniqueBusinesses = [...new Set(names)];
+        setNameArr(uniqueBusinesses)
+    }else if(type === 'Hospital'){
+        const names = hospitalData?.map((x) => x.business.business_name)
+        console.log("names:",names)
+        const uniqueBusinesses = [...new Set(names)];
+        setNameArr(uniqueBusinesses)
+    }else if(type === 'Saloon'){
+        const names = saloonData?.map((x) => x.business.business_name)
+        console.log("names:",names)
+        const uniqueBusinesses = [...new Set(names)];
+        setNameArr(uniqueBusinesses)
+    }
+  },[type])
+  console.log("nameArr:",nameArr)
+
 useEffect(() =>{
     if (submitVal) {
         const timeoutId = setTimeout(() => {
@@ -98,15 +151,15 @@ function extractNamesByType(type) {
     }
 }
     console.log("selectedSlot:",selectedSlot,"type:",type,"name:",name)
-    useEffect(() =>{
-        if(type){
-            //console.log("type:",type);
-            if(data.hasOwnProperty(type)){
-                const Names = extractNamesByType(type);
-                setNameArr(Names)
-            }
-        }
-    },[type])
+    // useEffect(() =>{
+    //     if(type){
+    //         //console.log("type:",type);
+    //         if(data.hasOwnProperty(type)){
+    //             const Names = extractNamesByType(type);
+    //             setNameArr(Names)
+    //         }
+    //     }
+    // },[type])
     function getSlotsByName(nameArr,name) {
         const nameList = nameArr.find(x => x.name === name);
         if (nameList) {
@@ -116,31 +169,111 @@ function extractNamesByType(type) {
             return [];
         }
     }
+    console.log("resturantData:",resturantData)
+    console.log("filteredTimeSlots:",timeslotArr)
     useEffect(() =>{
-        if(name){
-            const slotsData= getSlotsByName(nameArr,name);
-            setSlotArr(slotsData);
+        if(name && type === 'Restaurant'){
+           //const filterTimeSlots = resturantData?.
+           const filteredTimeSlots = resturantData.filter(session => session.business.business_name === name)
+                            .map(session => 
+                            {
+                                const data = {
+                                    session_uid:session.session_uid,
+                                    session_date:session.session_date,
+                                    timeslot:session.timeslot,
+                                    timeSlotDisplay: `${session.session_date} - ${session.timeslot}`
+                                }
+                                return data
+                            });
+            setTimeSlotArr(filteredTimeSlots);
+        }else if(name && type === 'Hospital'){
+            //const filterTimeSlots = resturantData?.
+           const filteredTimeSlots = hospitalData.filter(session => session.business.business_name === name)
+           .map(session => {
+            const data = {
+                session_uid,
+                session_date,
+                timeslot,
+                timeSlotDisplay: `${session.session_date} - ${session.timeslot}`
+            }
+            return data
+        });
+           setTimeSlotArr(filteredTimeSlots);
+        }else if(name && type === 'Saloon'){
+//const filterTimeSlots = resturantData?.
+           const filteredTimeSlots = saloonData.filter(session => session.business.business_name === name)
+                            .map(session => {
+                                const data = {
+                                    session_uid,
+                                    session_date,
+                                    timeslot,
+                                    timeSlotDisplay: `${session.session_date} - ${session.timeslot}`
+                                }
+                                return data
+                            });
+            setTimeSlotArr(filteredTimeSlots);
         }
     },[name])
 
 const handleChange = (event) => {
     setType(event.target.value);
 };
-const handleChangeSlot =(event) =>{
-    setSelectedSlot(event.target.value)
+const handleChangeSlot =(time) =>{
+    setSelectedSlot(time);
+    const getFinaltimeslotArr = timeslotArr?.filter((tes) => tes?.timeSlotDisplay === time);
+    if(getFinaltimeslotArr?.length ===1){
+        setFinalTime(getFinaltimeslotArr[0])
+    }
 }
-const submitData = () =>{
-    setSubmitVal(true);
+const convertDateFormat = (dateString) => {
+    // Split the date string into its components
+    const [year, month, day] = dateString.split('-');
+    
+    // Rearrange and format the date to DD-MM-YYYY
+    return `${day}-${month}-${year}`;
+};
+const submitData = async() =>{
+    const val =finalTime;
+    const url =  `http://127.0.0.1:8000/sessions/update/with-customer/${finalTime.session_uid}/`
+    const payload={
+        "session_uid" :finalTime.session_uid,
+        "session_date": finalTime.session_date,
+        "timeslot": finalTime.timeslot,
+        "session_status": "isBooked",
+        "customer_email": customerData?.customer_mail || ''
+    }
+    console.log("payload:",payload)
+        try {
+            const response = await axios.put(url, payload);
+            if(response.data?.customer?.customer_id){
+                setSubmitVal(true);
+            }
+            console.log('Response:', response.data);
+        } catch (error) {
+            if (error.response) {
+                // Server responded with a status other than 2xx
+                console.error('Error Response:', error.response.data);
+                console.error('Status Code:', error.response.status);
+            } else if (error.request) {
+                // Request was made but no response received
+                console.error('Error Request:', error.request);
+            } else {
+                // Something else caused the error
+                console.error('Error Message:', error.message);
+            }
+        }
+    
 }
   return (
     <div>
         <Grid className='booking'>
         <Typography variant="caption" gutterBottom style={{float:"right",margin:"1rem"}}>
-              Username:Saipavan
+              Username:{customerData?.customer_name}
             </Typography>
         <Paper elevation={10} style={paperStyle}>
             <Container maxWidth="md">
             <div class="logo"></div>
+            <Button variant="outlined" type='submit' color='primary' onClick={() =>navigate('/dashboard')}>Go To Dashboard</Button>
             <h1 className='booking'>Book A Slot</h1>
             <h3 className='booking'>Follow the below instructions for booking a session with respective slot</h3>
             <ol className='booking'>
@@ -149,7 +282,6 @@ const submitData = () =>{
                 </li>
                 <li>Select the availble place.</li>
                 <li>Select the availble time slots.</li>
-                <li>Book the slot.</li>
             </ol>
             <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">Select the type of area of booking</InputLabel>
@@ -176,12 +308,12 @@ const submitData = () =>{
                 >
                     {nameArr?.map((val) => {
                         return (
-                            <MenuItem value={val.name}>{val?.name}</MenuItem>
+                            <MenuItem value={val}>{val}</MenuItem>
                         )
                     })}
                 </Select>
             </FormControl>}
-            <MarginSpacerL />
+            {/* <MarginSpacerL />
             {name && slotArr?.length >0 && 
             <DatePicker
             selected={selectedDate}
@@ -191,22 +323,22 @@ const submitData = () =>{
             maxDate={new Date('2024-12-31')}
             isClearable
             placeholderText="Click to select a date"
-            />}
+            />} */}
             <MarginSpacerL />
             {
-                name && slotArr?.length >0 && 
+                name && timeslotArr?.length >0 && 
                 <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-label">Select the time slot</InputLabel>
+                <InputLabel id="demo-simple-select-label">Select the date & time slot</InputLabel>
                 <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
                     value={selectedSlot}
                     label="Select the time slot"
-                    onChange={handleChangeSlot}
+                    onChange={(e) => handleChangeSlot(e.target.value)}
                 >
-                    {slotArr?.map((val) => {
+                    {timeslotArr?.map((val) => {
                         return (
-                            <MenuItem value={val}>{val}</MenuItem>
+                            <MenuItem value={val?.timeSlotDisplay}>{val?.timeSlotDisplay}</MenuItem>
                         )
                     })}
                 </Select>

@@ -12,6 +12,7 @@ import {Typography} from '@material-ui/core';
 import Alert from '@mui/material/Alert';
 import axios from 'axios';
 import { useAppContext } from '../context/AppContext';
+import { useNavigate } from 'react-router-dom';
 
 function createData(name, calories, fat, carbs, protein) {
     return { name, calories, fat, carbs, protein };
@@ -35,15 +36,17 @@ const CancelAlert = () =>{
 
 const Dashboard = () => {
   const [rows,setRows] = useState([]);
-  
+  const [upcomingSessions,setUpcomingSessions] = useState([]);
+  const navigate = useNavigate();
   // useState([
   //   createData('Hospital', "Apollo","28-08-2024", "10:00 AM - 10:30 AM","Visited"),
-  //   createData('Restaurant', "Shahghouse","05-06-2024", "05:00 PM -06:00 PM","Visited"),
+  //   createData('Restaurant', "Shahghouse","05-06-2024", "05:00 PM -06:00 PM","Visaited"),
   //   createData('Restaurant', "Mehfil","08-06-2024", "12:00 PM - 01:00 PM","Not Visited"),
   //   createData('Restaurant', "Paradise","23-01-2024", "11:00 AM - 11:30 AM","Visited"),
   //   createData('Salon', "Trust","12-04-2024", "09:00 AM - 10:30 AM","Not Visited"),
   // ]);
   const [completeAlert,setCompleteAlert] =useState(false);
+  const [getSessions,setGetSessions] =useState(false);
   const [cancelAlert,setCancelAlert] =useState(false);
   const { initateCustomerdata, initateBusinessdata,businessData,customerData } = useAppContext(); // Use the context
   const paperStyle={
@@ -60,59 +63,94 @@ const Dashboard = () => {
         setCancelAlert(false);
       },[3000])
     }
-  },[completeAlert,cancelAlert])
-    const [upcomingSessions,setUpcomingSessions] = useState([{id:1,Type: "Restaurant",Name: "Paradise",Date: "06/10/2024","Slot":"01:00 PM -02:00 PM"},{id:2,Type: "Saloon",Name: "Trust",Date: "07/10/2024","Slot":"12:00 PM -01:00 PM"},{id:3,Type: "Hospital",Name: "Apollo",Date: "05/10/2024","Slot":"04:00 PM -06:00 PM"}])
+  },[completeAlert,cancelAlert]);
+
+  const fetchSessions = async () => {
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/sessions/');
+      if(response.data){
+        const filteredData = response.data?.filter(session => session?.customer?.customer_id === customerData.customer_id);
+        const upcomingSessions = filteredData?.filter(session => session?.session_status === "isBooked");
+        setUpcomingSessions(upcomingSessions);
+        const completedOrCanclleld = filteredData?.filter(session => session?.session_status === "isCancelled" || session?.session_status === "isCompleted");
+        // setRows((prevData) => [...prevData,createData(session.Type,session.Name,session.Date,session.Slot,"Visited")]);
+        if(completedOrCanclleld?.length >0){
+          const tempArr=[];
+          for(let session of completedOrCanclleld){
+            const val = session?.session_status === 'isCompleted' ? "Visited" : session?.session_status === 'isCancelled' ? "Not Visited" : "N/A"
+            tempArr?.push(createData(session?.business?.business_type,session?.business?.business_name,session.session_date,session.timeslot,val))
+          }
+          setRows(tempArr);
+        }
+      } 
+    } catch (err) {
+      //setError(err);               // Handle any errors
+      console.log("err:",err)
+    }
+  };
+
+  useEffect(() => {
+    // Fetch data from the server when component mounts
+      fetchSessions();  // Call the asynchronous function
+  }, []); 
+  useEffect(() => {
+    // Fetch data from the server when component mounts
+    if(getSessions){
+      fetchSessions();  // Call the asynchronous function
+      setGetSessions(false);
+    }
+  }, [getSessions]); 
+  
+    // const [upcomingSessions,setUpcomingSessions] = useState([{id:1,Type: "Restaurant",Name: "Paradise",Date: "06/10/2024","Slot":"01:00 PM -02:00 PM"},{id:2,Type: "Saloon",Name: "Trust",Date: "07/10/2024","Slot":"12:00 PM -01:00 PM"},{id:3,Type: "Hospital",Name: "Apollo",Date: "05/10/2024","Slot":"04:00 PM -06:00 PM"}])
     const completeSession = async (session) =>{
-        const slotData = {
-          business: businessData?.business_id || 1 ,
-          id:session.id,
-          session_date: session.Date,
-          slot:session.Slot,
-          session_status: "IsCompleted",
-          customer_id:customerData.customer_id,
-          customer_name:customerData.customer_name,
-          customer_mail:customerData.customer_mail
-        };
+      const url =  `http://127.0.0.1:8000/sessions/update/with-customer/${session.session_uid}/`
+      const slotData ={
+          "session_uid" :session?.session_uid,
+          "session_date": session?.session_date,
+          "timeslot": session?.timeslot,
+          "session_status": "isCompleted",
+          "customer_email": session?.customer?.customer_mail
+        }
         console.log('Slot data:', slotData); // For debugging
 
         try {
-          const response = await axios.post('http://127.0.0.1:8000/sessions/', slotData); // Replace with your actual API endpoint
+          const response = await axios.put(url, slotData); 
           console.log('API response:', response.data);
+          setCompleteAlert(true);
+          setGetSessions(true);
           // Handle successful response (e.g., show success message, reset form, etc.)
           } catch (error) {
           console.error('Error making API call:', error);
           // Handle error appropriately (e.g., show error message)
         }
-      const updateSessions = upcomingSessions?.filter((x) => x?.id !== session?.id);
-      setUpcomingSessions(updateSessions);
-      setRows((prevData) => [...prevData,createData(session.Type,session.Name,session.Date,session.Slot,"Visited")]);
-      setCompleteAlert(true)
+      // const updateSessions = upcomingSessions?.filter((x) => x?.id !== session?.id);
+      // setUpcomingSessions(updateSessions);
+      // setRows((prevData) => [...prevData,createData(session.Type,session.Name,session.Date,session.Slot,"Visited")]);
+      
     }
     const cancelSession =  async(session) =>{
-      const slotData = {
-        business: businessData?.business_id || 1 ,
-        id:session.id,
-        session_date: session.Date,
-        slot:session.Slot,
-        session_status: "isCancelled",
-        customer_id:customerData.customer_id,
-        customer_name:customerData.customer_name,
-        customer_mail:customerData.customer_mail
-      };
-      console.log('Slot data:', slotData); // For debugging
+      const url =  `http://127.0.0.1:8000/sessions/update/with-customer/${session.session_uid}/`
+      const slotData ={
+          "session_uid" :session?.session_uid,
+          "session_date": session?.session_date,
+          "timeslot": session?.timeslot,
+          "session_status": "isCancelled",
+          "customer_email": session?.customer?.customer_mail
+        }
 
       try {
-        const response = await axios.post('http://127.0.0.1:8000/sessions/', slotData); // Replace with your actual API endpoint
+        const response = await axios.put(url, slotData);
         console.log('API response:', response.data);
+        setCancelAlert(true);
+        setGetSessions(true);
         // Handle successful response (e.g., show success message, reset form, etc.)
         } catch (error) {
         console.error('Error making API call:', error);
         // Handle error appropriately (e.g., show error message)
       }
-      const updateSessions = upcomingSessions?.filter((x) => x?.id !== session?.id);
-      setUpcomingSessions(updateSessions);
-      setRows((prevData) => [...prevData,createData(session.Type,session.Name,session.Date,session.Slot,"Not Visited")]);
-      setCancelAlert(true)
+      // const updateSessions = upcomingSessions?.filter((x) => x?.id !== session?.id);
+      // setUpcomingSessions(updateSessions);
+      // setRows((prevData) => [...prevData,createData(session.Type,session.Name,session.Date,session.Slot,"Not Visited")]);
     }
     return (
         <>
@@ -121,10 +159,11 @@ const Dashboard = () => {
         <Grid className='booking'>
         <Paper elevation={10} style={paperStyle}>
             <>
+            <Button variant="outlined" type='submit' color='primary' onClick={() =>navigate('/booking')}>Go To Booking</Button>
             <div>
             <div>
             <Typography variant="caption" gutterBottom style={{float:"right"}}>
-              Username:Saipavan
+              Username:{customerData?.customer_name}
             </Typography>
             </div>
             <Typography variant="h4" gutterBottom>
@@ -151,10 +190,10 @@ const Dashboard = () => {
              <Grid item xs container direction="column" spacing={2}>
                <Grid item xs>
                  <Typography gutterBottom variant="subtitle1" component="div">
-                   Type: {session?.Type}
+                   Type: {session?.business?.business_type}
                  </Typography>
                  <Typography variant="body2" gutterBottom>
-                   Name: {session?.Name}
+                   Name: {session?.business?.business_name}
                  </Typography>
                </Grid>
                <Grid item style={{marginBottom:'10px'}}>
@@ -165,10 +204,10 @@ const Dashboard = () => {
              </Grid>
              <Grid item>
                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                   Date: {session?.Date}
+                   Date: {session?.session_date}
                  </Typography>
                <Typography variant="body2" component="div">
-                 Slot: {session?.Slot}
+                 Slot: {session?.timeslot}
                </Typography>
              </Grid>
            </Grid>
@@ -197,7 +236,7 @@ const Dashboard = () => {
             </>
             <>
             <h1>Completed Sessions</h1>
-            <TableContainer component={Paper}>
+            {rows?.length > 0 ? <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead style={{background :'#74b8ef'}}>
               <TableRow>
@@ -225,7 +264,23 @@ const Dashboard = () => {
               ))}
             </TableBody>
           </Table>
-            </TableContainer>
+            </TableContainer> : <>
+            <Paper
+                sx={(theme) => ({
+                p: 2,
+                margin: '3px',
+                maxWidth: 500,
+                flexGrow: 1,
+                display:"inline-block",
+                backgroundColor: '#fff',
+                ...theme.applyStyles('dark', {
+                  backgroundColor: '#1A2027',
+                }),
+              })}
+            >
+                No Completed Sessions
+            </Paper>
+            </>}
             </>
             
         </Paper>
