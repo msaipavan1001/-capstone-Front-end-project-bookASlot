@@ -69,7 +69,7 @@ const SimpleAlert = () =>{
         display="flex" 
         justifyContent="center" 
         alignItems="center" 
-        height="100vh"
+        height="1vh"
       >
         <Typography 
           variant="h6" 
