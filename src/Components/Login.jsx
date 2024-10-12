@@ -84,7 +84,7 @@ const Login = () =>{
                   };
                 try {
                   // Make the POST request
-                  const response = isChecked ? await axios.post('http://127.0.0.1:8000/business/login/', payload) : await axios.post('http://127.0.0.1:8000/customer/login/', payload);
+                  const response = isChecked ? await axios.post('http://54.211.16.123:8000/business/login/', payload) : await axios.post('http://54.211.16.123:8000/customer/login/', payload);
                   
                   // Handle the response
                   if(response?.data?.customer_id){

@@ -34,8 +34,13 @@ export const AppProvider = ({ children }) => {
     setCustomerData({ customer_id: 0,customer_name:'',customer_mail:'' })
   };
 
+  const resetData = () =>{
+    setBusinessData({ business_id: 0,business_name:'',business_type:'',business_mail:'' });
+    setCustomerData({ customer_id: 0,customer_name:'',customer_mail:'' });
+  }
+
   return (
-    <AppContext.Provider value={{ customerData,businessData, initateCustomerdata, initateBusinessdata }}>
+    <AppContext.Provider value={{ customerData,businessData, initateCustomerdata, initateBusinessdata,resetData }}>
       {children}
     </AppContext.Provider>
   );

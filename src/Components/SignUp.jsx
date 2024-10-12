@@ -109,7 +109,8 @@ const SignUp = () =>{
                
                 try {
                   // Make the POST request
-                  const response = !isBusiness ? await axios.post('http://127.0.0.1:8000/customer/signup/', payload) :  await axios.post('http://127.0.0.1:8000/business/signup/', payload);
+                  //const response = !isBusiness ? await axios.post('http://54.211.16.123:8000/customer/signup/', payload) :  await axios.post('http://54.211.16.123:8000/business/signup/', payload);
+                  const response = !isBusiness ? await axios.post('http://54.211.16.123:8000/customer/signup/', payload) :  await axios.post('http://54.211.16.123:8000/business/signup/', payload);
                   
                   // Handle the response    
                 

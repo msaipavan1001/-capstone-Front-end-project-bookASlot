@@ -109,7 +109,7 @@ useEffect(() => {
     // Fetch data from the server when component mounts
     const fetchSessions = async () => {
         try {
-          const response = await axios.get('http://127.0.0.1:8000/sessions/');
+          const response = await axios.get('http://54.211.16.123:8000/sessions/');
           setSessions(response.data);
           const tempData=response.data  // Set the fetched data to state   
           if(tempData){
@@ -252,7 +252,7 @@ const convertDateFormat = (dateString) => {
 };
 const submitData = async() =>{
     const val =finalTime;
-    const url =  `http://127.0.0.1:8000/sessions/update/with-customer/${finalTime.session_uid}/`
+    const url =  `http://54.211.16.123:8000/sessions/update/with-customer/${finalTime.session_uid}/`
     const payload={
         "session_uid" :finalTime.session_uid,
         "session_date": finalTime.session_date,

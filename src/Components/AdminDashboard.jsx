@@ -20,6 +20,7 @@ import { useAppContext } from '../context/AppContext';
 import { format } from 'date-fns';
 import { Alert } from '@mui/material';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function createData(name, calories, fat, carbs, protein) {
     return { name, calories, fat, carbs, protein };
@@ -56,7 +57,7 @@ const AdminDashboard = () => {
     const [sucess,setSucess]=useState(false);
     const [sucessWait,setSuccessWait]=useState(false);
     console.log("newDate:",selectedDate,"formatedDate:",formatedDate);
-
+    const navigate = useNavigate();
     const [rows,setRows]=useState([
     ])
     // const [rows,setRows]=useState([
@@ -77,7 +78,7 @@ const AdminDashboard = () => {
   const [startTime,setStartTime]=useState(dayjs().hour(10).minute(0));
   const [endTime,setEndTime]=useState(dayjs().hour(10).minute(0));
   const [upcomingSessions,setUpcomingSessions] = useState([])
-  const { initateCustomerdata, initateBusinessdata,businessData,customerData } = useAppContext(); // Use the context
+  const { initateCustomerdata, initateBusinessdata,businessData,customerData,resetData } = useAppContext(); // Use the context
 console.log("businessData:",businessData)
 const resetTimeSlots = () =>{
   setSelectedDate(minDate)
@@ -99,7 +100,7 @@ useEffect(()=>{
 },[completeAlert,cancelAlert])
 const fetchSessions = async () => {
   try {
-    const response = await axios.get('http://127.0.0.1:8000/sessions/');
+    const response = await axios.get('http://54.211.16.123:8000/sessions/');
     if(response.data){
       const filteredData = response.data?.filter(session => session?.business?.business_id === businessData.business_id);
       const upcomingSessions = filteredData?.filter(session => session?.session_status === "isBooked");
@@ -149,7 +150,7 @@ const handleEndTimeChange = (newTime) => {
   setEndTime(newTime);
 };
 const completeSession = async (session) =>{
-  const url =  `http://127.0.0.1:8000/sessions/update/by-business/${session?.session_uid}/`
+  const url =  `http://54.211.16.123:8000/sessions/update/by-business/${session?.session_uid}/`
   const slotData ={
           "session_date": session?.session_date,
           "timeslot": session?.timeslot,
@@ -173,7 +174,7 @@ const completeSession = async (session) =>{
 
 }
 const cancelSession =  async(session) =>{
-  const url =  `http://127.0.0.1:8000/sessions/update/by-business/${session?.session_uid}/`
+  const url =  `http://54.211.16.123:8000/sessions/update/by-business/${session?.session_uid}/`
   const slotData ={
           "session_date": session?.session_date,
           "timeslot": session?.timeslot,
@@ -251,7 +252,7 @@ console.log("timeslot:",timeslot)
   console.log('Slot data:', slotData,"timeslot:",timeslot); // For debugging
 
   try {
-    const response = await axios.post('http://127.0.0.1:8000/sessions/create/', slotData); 
+    const response = await axios.post('http://54.211.16.123:8000/sessions/create/', slotData); 
     if(response.data?.business?.business_id){
       setSucess(true);
       setSuccessWait(true)
@@ -270,13 +271,25 @@ const handleCancelSlotCraetion = () =>{
   setShowAdminSlotCreation(false);
   resetTimeSlots();
 }
+const handleLogout = () =>{
+  resetData();
+  navigate('/login')
+}
 console.log("start time:",startTime,"endTime:",endTime)
     return (
-
-        <Grid className='booking'>
+      <>
+      <Button 
+        variant="contained" 
+        color="primary" 
+        onClick={handleLogout}
+        style={{float:"right",margin:"1rem"}}
+        >
+      Logout
+    </Button>
+    <Grid className='booking'>
           {completeAlert && <CompletedAlert />}
           {cancelAlert && <CancelAlert />}
-        <Typography variant="caption" gutterBottom style={{float:"right",margin:"1rem"}}>
+        <Typography variant="caption" gutterBottom style={{float:"right",marginRight:"3rem"}}>
               Business Name:{businessData?.business_name || ''}
         </Typography>  
         <Paper elevation={10} style={paperStyle}>
@@ -439,6 +452,8 @@ console.log("start time:",startTime,"endTime:",endTime)
   
         </Paper>
         </Grid>
+      </>
+      
       );
 }
 

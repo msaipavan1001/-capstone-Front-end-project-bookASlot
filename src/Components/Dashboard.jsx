@@ -13,6 +13,7 @@ import Alert from '@mui/material/Alert';
 import axios from 'axios';
 import { useAppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
+import MarginSpacer from './MarginSpacer';
 
 function createData(name, calories, fat, carbs, protein) {
     return { name, calories, fat, carbs, protein };
@@ -48,7 +49,7 @@ const Dashboard = () => {
   const [completeAlert,setCompleteAlert] =useState(false);
   const [getSessions,setGetSessions] =useState(false);
   const [cancelAlert,setCancelAlert] =useState(false);
-  const { initateCustomerdata, initateBusinessdata,businessData,customerData } = useAppContext(); // Use the context
+  const { initateCustomerdata, initateBusinessdata,businessData,customerData,resetData } = useAppContext(); // Use the context
   const paperStyle={
         padding:20,height:'auto',margin:"auto auto",textAlign:"left",background:'#eef7ff'
     };
@@ -67,7 +68,7 @@ const Dashboard = () => {
 
   const fetchSessions = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/sessions/');
+      const response = await axios.get('http://54.211.16.123:8000/sessions/');
       if(response.data){
         const filteredData = response.data?.filter(session => session?.customer?.customer_id === customerData.customer_id);
         const upcomingSessions = filteredData?.filter(session => session?.session_status === "isBooked");
@@ -103,7 +104,7 @@ const Dashboard = () => {
   
     // const [upcomingSessions,setUpcomingSessions] = useState([{id:1,Type: "Restaurant",Name: "Paradise",Date: "06/10/2024","Slot":"01:00 PM -02:00 PM"},{id:2,Type: "Saloon",Name: "Trust",Date: "07/10/2024","Slot":"12:00 PM -01:00 PM"},{id:3,Type: "Hospital",Name: "Apollo",Date: "05/10/2024","Slot":"04:00 PM -06:00 PM"}])
     const completeSession = async (session) =>{
-      const url =  `http://127.0.0.1:8000/sessions/update/with-customer/${session.session_uid}/`
+      const url =  `http://54.211.16.123:8000/sessions/update/with-customer/${session.session_uid}/`
       const slotData ={
           "session_uid" :session?.session_uid,
           "session_date": session?.session_date,
@@ -129,7 +130,7 @@ const Dashboard = () => {
       
     }
     const cancelSession =  async(session) =>{
-      const url =  `http://127.0.0.1:8000/sessions/update/with-customer/${session.session_uid}/`
+      const url =  `http://54.211.16.123:8000/sessions/update/with-customer/${session.session_uid}/`
       const slotData ={
           "session_uid" :session?.session_uid,
           "session_date": session?.session_date,
@@ -152,14 +153,27 @@ const Dashboard = () => {
       // setUpcomingSessions(updateSessions);
       // setRows((prevData) => [...prevData,createData(session.Type,session.Name,session.Date,session.Slot,"Not Visited")]);
     }
+    const handleLogout = () =>{
+      resetData();
+      navigate('/login')
+    }
     return (
         <>
+        <Button 
+        variant="contained" 
+        color="primary" 
+        onClick={handleLogout}
+        style={{float:"right"}}
+        >
+      Logout
+    </Button>
         {completeAlert && <CompletedAlert />}
         {cancelAlert && <CancelAlert />}
         <Grid className='booking'>
         <Paper elevation={10} style={paperStyle}>
             <>
             <Button variant="outlined" type='submit' color='primary' onClick={() =>navigate('/booking')}>Go To Booking</Button>
+            <MarginSpacer />
             <div>
             <div>
             <Typography variant="caption" gutterBottom style={{float:"right"}}>
